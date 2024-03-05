@@ -4,32 +4,32 @@ import { yupResolver } from '@hookform/resolvers/yup';
 
 function App() {
 	const yupSchema = yup.object({
-		// name: yup
-		// 	.string()
-		// 	.required('Le champ est requis')
-		// 	.min(2, 'Le champ doit contenir au moins deux caractères')
-		// 	.test('isYes', "L'API a dit non", async () => {
-		// 		const response = await fetch('https://yesno.wtf/api');
-		// 		const result = await response.json();
-		// 		console.log(result);
-		// 		return result.answer === 'yes';
-		// 	}),
-		// age: yup
-		// 	.number()
-		// 	.typeError('Veuillez entrer un nombre')
-		// 	.min(18, "L'âge doit être supérieur à 18 ans"),
-		// password: yup
-		// 	.string()
-		// 	.required('Veuillez entrer un mot de passe')
-		// 	.min(5, 'Le mot de passe est trop court')
-		// 	.max(10, 'Le mot de passe est trop long'),
-		// confirmPassword: yup
-		// 	.string()
-		// 	.required('Veuillez confirmer votre mot de passe')
-		// 	.oneOf(
-		// 		[yup.ref('password', '')],
-		// 		'Les mots de passe doivent être identiques'
-		// 	),
+		name: yup
+			.string()
+			.required('Le champ est requis')
+			.min(2, 'Le champ doit contenir au moins deux caractères'),
+		// .test('isYes', "L'API a dit non", async () => {
+		// 	const response = await fetch('https://yesno.wtf/api');
+		// 	const result = await response.json();
+		// 	console.log(result);
+		// 	return result.answer === 'yes';
+		// }),
+		age: yup
+			.number()
+			.typeError('Veuillez entrer un nombre')
+			.min(18, "L'âge doit être supérieur à 18 ans"),
+		password: yup
+			.string()
+			.required('Veuillez entrer un mot de passe')
+			.min(5, 'Le mot de passe est trop court')
+			.max(10, 'Le mot de passe est trop long'),
+		confirmPassword: yup
+			.string()
+			.required('Veuillez confirmer votre mot de passe')
+			.oneOf(
+				[yup.ref('password', '')],
+				'Les mots de passe doivent être identiques'
+			),
 	});
 
 	const defaultValues = {
@@ -52,10 +52,12 @@ function App() {
 		//reset,
 		setError,
 		clearErrors,
+		setFocus,
 		formState: { errors, isSubmitting },
 	} = useForm({
 		defaultValues,
 		resolver: yupResolver(yupSchema),
+		criteriaMode: 'all',
 		mode: 'onBlur',
 	});
 
@@ -63,23 +65,29 @@ function App() {
 
 	async function submit(values) {
 		try {
-			clearErrors();
-			const response = await fetch('https://restapi.fr/api/testr', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(values),
-			});
-			if (response.ok) {
-				throw new Error('new error');
-				// const newUser = await response.json();
-				// reset(defaultValues);
-				// console.log(newUser);
-			} else {
-				console.log('Erreur');
-			}
+			// clearErrors();
+			// const response = await fetch('https://restapi.fr/api/testr', {
+			// 	method: 'POST',
+			// 	headers: {
+			// 		'Content-Type': 'application/json',
+			// 	},
+			// 	body: JSON.stringify(values),
+			// });
+			// if (response.ok) {
+			throw new Error('new error');
+			// const newUser = await response.json();
+			// reset(defaultValues);
+			// console.log(newUser);
+			// } else {
+			// 	console.log('Erreur');
+			// }
 		} catch (e) {
+			setError(
+				'name',
+				{ type: 'wrongName', message: e.message },
+				{ shouldFocus: true }
+			);
+			//setFocus('age');
 			setError('globalError', { type: 'wrongName', message: e.message });
 		}
 	}
@@ -95,7 +103,13 @@ function App() {
 						Nom
 					</label>
 					<input {...register('name')} id='name' type='text' />
-					{errors?.name && <p>{errors.name.message}</p>}
+					{errors?.name && (
+						<ul>
+							{Object.keys(errors.name.types).map((k) => (
+								<li key={k}>{errors.name.types[k]}</li>
+							))}
+						</ul>
+					)}
 				</div>
 
 				<div className='d-flex flex-column mb-20'>
