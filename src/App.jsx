@@ -8,7 +8,12 @@ function App() {
 			.string()
 			.required('Le champ est requis')
 			.min(2, 'Le champ doit contenir au moins deux caractères')
-			.max(10),
+			.test('isYes', "L'API a dit non", async () => {
+				const response = await fetch('https://yesno.wtf/api');
+				const result = await response.json();
+				console.log(result);
+				return result.answer === 'yes';
+			}),
 		age: yup
 			.number()
 			.typeError('Veuillez entrer un nombre')
