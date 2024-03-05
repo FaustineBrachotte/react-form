@@ -1,15 +1,22 @@
 import { useForm } from 'react-hook-form';
 
 function App() {
-	const { register, handleSubmit, getValues, watch } = useForm();
+	const {
+		register,
+		handleSubmit,
+		//getValues,
+		//watch,
+		formState: { errors },
+	} = useForm({
+		defaultValues: { name: '' },
+		mode: 'onBlur',
+	});
 
-	watch();
+	// watch();
 
 	function submit(values) {
 		console.log(values);
 	}
-
-	console.log(getValues());
 
 	return (
 		<div
@@ -21,7 +28,33 @@ function App() {
 					<label htmlFor='name' className='mb-5'>
 						Nom
 					</label>
-					<input {...register('name')} id='name' type='text' />
+					<input
+						{...register('name', {
+							minLength: { value: 2, message: 'trop court' },
+							required: { value: true, message: 'champ requis' },
+							validate(value) {
+								if (value == 'Jean') {
+									return true;
+								} else {
+									return 'Mauvais prénom';
+								}
+							},
+						})}
+						id='name'
+						type='text'
+					/>
+					{errors?.name && <p>{errors.name.message}</p>}
+				</div>
+				<div className='d-flex flex-column mb-20'>
+					<label htmlFor='age' className='mb-5'>
+						Age
+					</label>
+					<input
+						{...register('age', { valueAsNumber: true })}
+						id='age'
+						type='number'
+					/>
+					{errors?.age && <p>{errors.age.message}</p>}
 				</div>
 				<button className='btn btn-primary'>Sauvegarder</button>
 			</form>
