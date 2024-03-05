@@ -1,35 +1,42 @@
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 function App() {
 	const yupSchema = yup.object({
-		name: yup
-			.string()
-			.required('Le champ est requis')
-			.min(2, 'Le champ doit contenir au moins deux caractères'),
-		// .test('isYes', "L'API a dit non", async () => {
-		// 	const response = await fetch('https://yesno.wtf/api');
-		// 	const result = await response.json();
-		// 	console.log(result);
-		// 	return result.answer === 'yes';
-		// }),
-		age: yup
-			.number()
-			.typeError('Veuillez entrer un nombre')
-			.min(18, "L'âge doit être supérieur à 18 ans"),
-		password: yup
-			.string()
-			.required('Veuillez entrer un mot de passe')
-			.min(5, 'Le mot de passe est trop court')
-			.max(10, 'Le mot de passe est trop long'),
-		confirmPassword: yup
-			.string()
-			.required('Veuillez confirmer votre mot de passe')
-			.oneOf(
-				[yup.ref('password', '')],
-				'Les mots de passe doivent être identiques'
-			),
+		// name: yup
+		// 	.string()
+		// 	.required('Le champ est requis')
+		// 	.min(2, 'Le champ doit contenir au moins deux caractères'),
+		// // .test('isYes', "L'API a dit non", async () => {
+		// // 	const response = await fetch('https://yesno.wtf/api');
+		// // 	const result = await response.json();
+		// // 	console.log(result);
+		// // 	return result.answer === 'yes';
+		// // }),
+		// age: yup
+		// 	.number()
+		// 	.typeError('Veuillez entrer un nombre')
+		// 	.min(18, "L'âge doit être supérieur à 18 ans"),
+		// password: yup
+		// 	.string()
+		// 	.required('Veuillez entrer un mot de passe')
+		// 	.min(5, 'Le mot de passe est trop court')
+		// 	.max(10, 'Le mot de passe est trop long'),
+		// confirmPassword: yup
+		// 	.string()
+		// 	.required('Veuillez confirmer votre mot de passe')
+		// 	.oneOf(
+		// 		[yup.ref('password', '')],
+		// 		'Les mots de passe doivent être identiques'
+		// 	),
+		activities: yup.array().of(
+			yup.object({
+				level: yup
+					.string()
+					.equals(['expert'], 'Vous ne pouvez pas être débutant'),
+			})
+		),
 	});
 
 	const defaultValues = {
@@ -42,17 +49,18 @@ function App() {
 			astro: '',
 			happy: false,
 		},
+		activities: [],
 	};
 
 	const {
+		control,
 		register,
 		handleSubmit,
 		//getValues,
-		//watch,
 		//reset,
-		setError,
-		clearErrors,
-		setFocus,
+		// setError,
+		// clearErrors,
+		// setFocus,
 		formState: { errors, isSubmitting },
 	} = useForm({
 		defaultValues,
@@ -61,35 +69,50 @@ function App() {
 		mode: 'onBlur',
 	});
 
+	const { fields, append, remove } = useFieldArray({
+		name: 'activities',
+		control,
+	});
+
 	// watch();
 
+	function addActivity() {
+		append({ value: '', level: 'beginner' });
+	}
+
+	function deleteActivity(i) {
+		remove(i);
+	}
+
 	async function submit(values) {
-		try {
-			// clearErrors();
-			// const response = await fetch('https://restapi.fr/api/testr', {
-			// 	method: 'POST',
-			// 	headers: {
-			// 		'Content-Type': 'application/json',
-			// 	},
-			// 	body: JSON.stringify(values),
-			// });
-			// if (response.ok) {
-			throw new Error('new error');
-			// const newUser = await response.json();
-			// reset(defaultValues);
-			// console.log(newUser);
-			// } else {
-			// 	console.log('Erreur');
-			// }
-		} catch (e) {
-			setError(
-				'name',
-				{ type: 'wrongName', message: e.message },
-				{ shouldFocus: true }
-			);
-			//setFocus('age');
-			setError('globalError', { type: 'wrongName', message: e.message });
-		}
+		console.log(values);
+
+		// try {
+		// 	// clearErrors();
+		// 	// const response = await fetch('https://restapi.fr/api/testr', {
+		// 	// 	method: 'POST',
+		// 	// 	headers: {
+		// 	// 		'Content-Type': 'application/json',
+		// 	// 	},
+		// 	// 	body: JSON.stringify(values),
+		// 	// });
+		// 	// if (response.ok) {
+		// 	throw new Error('new error');
+		// 	// const newUser = await response.json();
+		// 	// reset(defaultValues);
+		// 	// console.log(newUser);
+		// 	// } else {
+		// 	// 	console.log('Erreur');
+		// 	// }
+		// } catch (e) {
+		// 	setError(
+		// 		'name',
+		// 		{ type: 'wrongName', message: e.message },
+		// 		{ shouldFocus: true }
+		// 	);
+		// 	//setFocus('age');
+		// 	setError('globalError', { type: 'wrongName', message: e.message });
+		// }
 	}
 
 	return (
@@ -191,6 +214,46 @@ function App() {
 						<p>{errors.confirmPassword.message}</p>
 					)}
 				</div>
+
+				<div className='d-flex flex-column mb-20'>
+					<label className='mb-5 d-flex flex-row justify-content align-tiems'>
+						<span className='flex-fill'>Activités</span>
+						<button
+							onClick={addActivity}
+							type='button'
+							className='btn btn-reverse-primary'
+						>
+							+
+						</button>
+					</label>
+					<ul>
+						{fields.map((activity, i) => (
+							<li key={activity.id} className='d-flex flex-row'>
+								<input
+									{...register(`activities[${i}].value`)}
+									className='flex-fill mr-5'
+									type='text'
+								/>
+								<select {...register(`activities[${i}].level`)}>
+									<option value='beginner'>Débutant</option>
+									<option value='expert'>Expert</option>
+								</select>
+								<button
+									onClick={() => deleteActivity(i)}
+									type='button'
+									className='btn btn-primary'
+								>
+									-
+								</button>
+								{errors.activities?.length &&
+									errors.activities[i]?.level && (
+										<p>{errors.activities[i].level.message}</p>
+									)}
+							</li>
+						))}
+					</ul>
+				</div>
+
 				{errors.globalError && <p>{errors.globalError.message}</p>}
 				<button disabled={isSubmitting} className='btn btn-primary'>
 					Sauvegarder
