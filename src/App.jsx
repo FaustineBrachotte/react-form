@@ -32,28 +32,56 @@ function App() {
 		// 	),
 	});
 
+	const defaultValues = {
+		name: '',
+		age: '',
+		gender: '',
+		password: '',
+		confirmPassword: '',
+		other: {
+			astro: '',
+			happy: false,
+		},
+	};
+
 	const {
 		register,
 		handleSubmit,
 		//getValues,
 		//watch,
-		formState: { errors },
+		//reset,
+		setError,
+		clearErrors,
+		formState: { errors, isSubmitting },
 	} = useForm({
-		defaultValues: {
-			name: '',
-			other: {
-				astro: '',
-				happy: false,
-			},
-		},
+		defaultValues,
 		resolver: yupResolver(yupSchema),
 		mode: 'onBlur',
 	});
 
 	// watch();
 
-	function submit(values) {
-		console.log(values);
+	async function submit(values) {
+		try {
+			clearErrors();
+			const response = await fetch('https://restapi.fr/api/testr', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(values),
+			});
+			if (response.ok) {
+				throw new Error('new error');
+				// const newUser = await response.json();
+				// reset(defaultValues);
+				// console.log(newUser);
+			} else {
+				console.log('Erreur');
+			}
+		} catch (e) {
+			setError('globalError', { type: 'wrongName', message: e.message });
+		}
 	}
 
 	return (
@@ -149,8 +177,10 @@ function App() {
 						<p>{errors.confirmPassword.message}</p>
 					)}
 				</div>
-
-				<button className='btn btn-primary'>Sauvegarder</button>
+				{errors.globalError && <p>{errors.globalError.message}</p>}
+				<button disabled={isSubmitting} className='btn btn-primary'>
+					Sauvegarder
+				</button>
 			</form>
 		</div>
 	);
