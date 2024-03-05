@@ -1,6 +1,17 @@
 import { useForm } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 function App() {
+	const yupSchema = yup.object({
+		name: yup
+			.string()
+			.required('Le champ est requis')
+			.min(2, 'Le champ doit contenir au moins deux caractères')
+			.max(10),
+		age: yup.number().typeError('Veuillez entrer un nombre').min(18),
+	});
+
 	const {
 		register,
 		handleSubmit,
@@ -9,6 +20,7 @@ function App() {
 		formState: { errors },
 	} = useForm({
 		defaultValues: { name: '' },
+		resolver: yupResolver(yupSchema),
 		mode: 'onBlur',
 	});
 
@@ -28,32 +40,14 @@ function App() {
 					<label htmlFor='name' className='mb-5'>
 						Nom
 					</label>
-					<input
-						{...register('name', {
-							minLength: { value: 2, message: 'trop court' },
-							required: { value: true, message: 'champ requis' },
-							validate(value) {
-								if (value == 'Jean') {
-									return true;
-								} else {
-									return 'Mauvais prénom';
-								}
-							},
-						})}
-						id='name'
-						type='text'
-					/>
+					<input {...register('name')} id='name' type='text' />
 					{errors?.name && <p>{errors.name.message}</p>}
 				</div>
 				<div className='d-flex flex-column mb-20'>
 					<label htmlFor='age' className='mb-5'>
 						Age
 					</label>
-					<input
-						{...register('age', { valueAsNumber: true })}
-						id='age'
-						type='number'
-					/>
+					<input {...register('age')} id='age' type='number' />
 					{errors?.age && <p>{errors.age.message}</p>}
 				</div>
 				<button className='btn btn-primary'>Sauvegarder</button>
